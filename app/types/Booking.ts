@@ -5,8 +5,8 @@ export interface Booking {
   horaAgendamento: string;
   serviceId: string;
   serviceName: string;
-  imagemServico: string;
+  serviceImage: string;
   precoServico: number;
-  isConfirmado: boolean;
+  isConfirmed: boolean;
 }
 export default Booking;

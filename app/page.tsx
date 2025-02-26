@@ -27,6 +27,17 @@ interface Barbearia {
   phones?: string[];
 }
 
+interface FirebaseBooking {
+  userId: string;
+  serviceId: string;
+  dataAgendamento: string;
+  horaAgendamento: string;
+  serviceName: string;
+  serviceImage: string;
+  servicePrice: number;
+  isConfirmed: boolean;
+}
+
 const Home = () => {
   const [services, setServices] = useState<Service[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -92,23 +103,26 @@ const Home = () => {
       .then((snapshot) => {
         const data = snapshot.val();
         if (data) {
-          // Log para debug
           console.log("Dados brutos:", data);
           
-          const formattedData = Object.values(data).filter(
-            (booking: any) => booking.userId === session?.user?.id
+          const formattedData = (Object.values(data) as FirebaseBooking[]).filter(
+            (booking) => booking.userId === session?.user?.id
           );
           
           console.log("Dados filtrados por usuário:", formattedData);
 
-          const bookingsWithImages = formattedData.map((booking: any) => {
+          const bookingsWithImages = formattedData.map((booking) => {
             const service = services.find((s) => s.id === booking.serviceId);
             return {
-              ...booking,
-              serviceImage: service?.imageUrl || "",
+              id: booking.serviceId,
+              userId: booking.userId,
+              serviceId: booking.serviceId,
+              dataAgendamento: booking.dataAgendamento,
+              horaAgendamento: booking.horaAgendamento,
               serviceName: service?.name || "",
-              servicePrice: service?.price || 0,
-              isConfirmed: true // Temporariamente definido como true para teste
+              serviceImage: service?.imageUrl || "",
+              precoServico: service?.price || 0,
+              isConfirmed: true
             };
           });
 
@@ -186,7 +200,7 @@ const Home = () => {
                       name: booking.serviceName,
                       description: "",
                       imageUrl: booking.serviceImage,
-                      price: booking.servicePrice,
+                      price: booking.precoServico,
                     }]}
                     isConfirmado={booking.isConfirmed}
                     onSelect={() => console.log("Reserva selecionada:", booking)}
