@@ -1,3 +1,5 @@
+"use client";
+
 import Header from "./_components/ui/header";
 import ServiceItem from "./_components/ui/service-item";
 import Image from "next/image";
@@ -14,7 +16,12 @@ import { ptBR } from "date-fns/locale";
 import Footer from "./_components/ui/Footer";
 import { Booking } from './types/Booking'; // Importando a interface Booking
 import { Service } from "./_components/ui/service-item";
-import { getConfirmadBookings } from "./_data/get-confirmad-bookings";
+import { Card, CardContent } from "./_components/ui/card";
+import { Badge } from "./_components/ui/badge";
+import { Avatar, AvatarImage } from "./_components/ui/avatar";
+
+
+
 
 interface Barbearia {
   phones?: string[];
@@ -22,10 +29,9 @@ interface Barbearia {
 
 const Home = () => {
   const [services, setServices] = useState<Service[]>([]);
-  const [bookings, setBookings] = useState<Booking[]>([]); // Usando a interface Booking
+  const [bookings, setBookings] = useState<Booking[]>([]);
   const [barbearia, setBarbearia] = useState<Barbearia>({});
-  const [confirmedBookings, setConfirmedBookings] = useState<Booking[]>([]); // Usando a interface Booking
-  const [isLoading, setIsLoading] = useState(true);
+  const [confirmedBookings, setConfirmedBookings] = useState<Booking[]>([]);
 
   const { data: session, status } = useSession();
   const router = useRouter();
@@ -86,54 +92,37 @@ const Home = () => {
       .then((snapshot) => {
         const data = snapshot.val();
         if (data) {
-          const formattedData: Booking[] = Object.values(data).filter(
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (booking: any) => booking.userId === session?.user?.id,
-          ) as Booking[];
+          // Log para debug
+          console.log("Dados brutos:", data);
+          
+          const formattedData = Object.values(data).filter(
+            (booking: any) => booking.userId === session?.user?.id
+          );
+          
+          console.log("Dados filtrados por usuário:", formattedData);
 
-          const confirmedBookings = formattedData.filter((booking) => {
-            const bookingDate = new Date(booking.dataAgendamento);
-            return isValid(bookingDate) && (isFuture(bookingDate) || (isToday(bookingDate) && bookingDate < horaFechamento));
+          const bookingsWithImages = formattedData.map((booking: any) => {
+            const service = services.find((s) => s.id === booking.serviceId);
+            return {
+              ...booking,
+              serviceImage: service?.imageUrl || "",
+              serviceName: service?.name || "",
+              servicePrice: service?.price || 0,
+              isConfirmed: true // Temporariamente definido como true para teste
+            };
           });
 
-          const bookingsWithImages = confirmedBookings.map((booking) => ({
-            ...booking,
-            imagemServico:
-              booking.imagemServico ||
-              services.find((s) => s.id === booking.serviceId)?.imageUrl ||
-              "",
-            serviceName:
-              services.find((s) => s.id === booking.serviceId)?.name || "",
-            precoServico:
-              services.find((s) => s.id === booking.serviceId)?.price || 0,
-            isConfirmado:
-              isFuture(new Date(booking.dataAgendamento)) ||
-              (isToday(new Date(booking.dataAgendamento)) && new Date(booking.dataAgendamento) < horaFechamento)
-                ? true
-                : false,
-          }));
-
+          console.log("Bookings processados:", bookingsWithImages);
+          
           setBookings(bookingsWithImages);
-        } else {
-          setBookings([]);
+          setConfirmedBookings(bookingsWithImages);
         }
-        setIsLoading(false);
       })
       .catch((error) => {
         console.error("Erro ao buscar agendamentos:", error);
         toast.error("Erro ao carregar agendamentos.");
-        setBookings([]);
-        setIsLoading(false);
       });
-  }, [session, services, horaFechamento]);
-
-  useEffect(() => {
-    const fetchConfirmedBookings = async () => {
-      const bookings = await getConfirmadBookings();
-      setConfirmedBookings(bookings);
-    };
-    fetchConfirmedBookings();
-  }, []);
+  }, [session?.user?.id, services]);
 
   useEffect(() => {
     fetchServices();
@@ -145,14 +134,6 @@ const Home = () => {
     navigator.clipboard.writeText(phone);
     toast.success("Telefone copiado com sucesso!");
   };
-
-  if (status === "loading" || isLoading) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <p className="text-foreground">Carregando...</p>
-      </div>
-    );
-  }
 
   const formatPhone = (phone: string): string => {
     phone = phone.replace(/\D/g, "");
@@ -167,7 +148,7 @@ const Home = () => {
       <div className="bg-card p-5 text-card-foreground">
         <div className="flex items-center gap-3">
           <h2 className="text-xl font-bold text-card-foreground">
-            Olá, {session?.user.name || "Seja Bem Vindo"}!
+            Olá, {session?.user?.name || "Seja Bem Vindo"}!
           </h2>
         </div>
         <p className="mt-3 text-muted-foreground">
@@ -191,26 +172,37 @@ const Home = () => {
 
         {confirmedBookings.length > 0 && (
           <>
-            <h2 className="mb-3 mt-6 text-xs font-bold uppercase text-muted-foreground">
-              Agendamentos
-            </h2>
-            {confirmedBookings.map((booking) => (
-              <BookingItem
-                key={booking.id}
-                booking={booking}
-                services={[{
-                  id: booking.serviceId,
-                  name: booking.serviceName,
-                  description: "",
-                  imageUrl: booking.imagemServico,
-                  price: booking.precoServico,
-                }]}
-                isConfirmado={booking.isConfirmado}
-                onSelect={() => console.log(booking)}
-              />
-            ))}
+            <div className="mt-6">
+              <h2 className="mb-3 text-xs font-bold uppercase text-gray-400">
+                Agendamentos
+              </h2>
+              <div className="flex gap-5 overflow-x-auto [&::-webkit-scrollbar]:hidden">
+                {confirmedBookings.map((booking) => (
+                  <BookingItem
+                    key={booking.id}
+                    booking={JSON.parse(JSON.stringify(booking))}
+                    services={[{
+                      id: booking.serviceId,
+                      name: booking.serviceName,
+                      description: "",
+                      imageUrl: booking.serviceImage,
+                      price: booking.servicePrice,
+                    }]}
+                    isConfirmado={booking.isConfirmed}
+                    onSelect={() => console.log("Reserva selecionada:", booking)}
+                  />
+                ))}
+              </div>
+            </div>
           </>
         )}
+
+        {confirmedBookings.length === 0 && (
+          <div className="mt-6">
+            <p className="text-gray-500">Nenhum agendamento encontrado.</p>
+          </div>
+        )}
+
         <h2 className="mb-6 mt-6 text-xs font-bold uppercase text-muted-foreground">
           Serviços
         </h2>

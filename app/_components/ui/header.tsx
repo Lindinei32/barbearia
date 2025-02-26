@@ -8,6 +8,7 @@ import {
   LogOutIcon,
   MenuIcon,
   LogInIcon,
+  UserIcon,
 } from "lucide-react";
 import {
   Sheet,
@@ -28,7 +29,7 @@ import {
   DialogTrigger,
 } from "./dialog";
 import { signOut, useSession, signIn } from "next-auth/react";
-import { Avatar, AvatarImage, AvatarFallback } from "./avatar"; // Importando AvatarFallback
+import { Avatar, AvatarImage, AvatarFallback } from "./avatar";
 import SignInDialog from "./sign-in-dialog";
 import { Card, CardContent } from "./card";
 import { useRouter } from "next/navigation";
@@ -111,7 +112,7 @@ const Header = () => {
               <MenuIcon />
             </Button>
           </SheetTrigger>
-          <SheetContent className="overflow-y-auto ">
+          <SheetContent className="overflow-y-auto">
             <SheetHeader>
               <SheetTitle className="text-left text-white">Menu</SheetTitle>
             </SheetHeader>
@@ -119,16 +120,18 @@ const Header = () => {
             <div className="flex items-center justify-between gap-3 border-b border-solid border-b-gray-300 p-5">
               {session?.user ? (
                 <div className="flex items-center gap-2">
-                  <Avatar className="h-12 w-12 rounded-full"> {/* Tamanho maior (40x40) e circular */}
-                    {session.user.image ? (
-                      <AvatarImage src={session.user.image} alt={session.user.name ?? "Usuário"} />
-                    ) : (
-                      <AvatarFallback>{session?.user.name?.[0] || "U"}</AvatarFallback>
-                    )}
+                  <Avatar className="h-12 w-12">
+                    <AvatarImage 
+                      src={session.user.image!} 
+                      alt={session.user.name || ""}
+                    />
+                    <AvatarFallback>
+                      <UserIcon className="h-4 w-4" />
+                    </AvatarFallback>
                   </Avatar>
                   <div>
-                    <p className="font-bold text-white">{session.user.name ?? "Usuário"}</p>
-                    <p className="text-sm text-gray-300">{session.user.email ?? ""}</p>
+                    <p className="font-bold text-white">{session.user.name}</p>
+                    <p className="text-sm text-gray-300">{session.user.email}</p>
                   </div>
                 </div>
               ) : (
@@ -215,7 +218,6 @@ const Header = () => {
           </SheetContent>
         </Sheet>
 
-        {/* Diálogo de login para navegação não autenticada */}
         <Dialog open={isSignInDialogOpen} onOpenChange={(open) => setIsSignInDialogOpen(open)}>
           <DialogContent className="w-[90%]">
             <SignInDialog />
