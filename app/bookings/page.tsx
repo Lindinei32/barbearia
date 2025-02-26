@@ -92,14 +92,19 @@ const BookingItem = ({ booking, service, isConfirmado, onSelect }: BookingItemPr
           <Badge className="w-fit" variant={isConfirmado ? "default" : "destructive"}>
             {status}
           </Badge>
-          <h1 className="text-sm font-semibold">
-            {booking.serviceName || service?.Name || "Serviço Não Encontrado"}
-          </h1>
+          <div className="flex flex-col gap-2">
+            <h2 className="text-sm font-bold">{booking.serviceName}</h2>
+            <p className="text-sm">
+              {Intl.NumberFormat("pt-BR", {
+                style: "currency",
+                currency: "BRL"
+              }).format(booking.precoServico)}
+            </p>
+          </div>
           <div className="flex items-center gap-2">
             <Avatar className="h-12 w-12">
               <AvatarImage src={booking.imagemServico || service?.ImageUrl || ""} alt={booking.serviceName} />
             </Avatar>
-            <p className="text-sm font-bold text-primary">R$ {booking.precoServico.toFixed(2)}</p>
           </div>
         </div>
         <div className="flex flex-col items-center justify-center border-l-2 border-solid px-5">
