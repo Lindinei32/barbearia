@@ -35,7 +35,7 @@ const Bookings = async () => {
               Confirmados
             </h2>
             {confirmadBookings.map((booking) => (
-              <BookingItem key={booking.id} booking={booking} />
+              <BookingItem key={booking.id} booking={JSON.parse(JSON.stringify(booking))} />
             ))}
           </>
         )}
