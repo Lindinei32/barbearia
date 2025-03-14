@@ -9,7 +9,8 @@
     "start": "next start",
     "lint": "next lint",
     "prepare": "husky",
-    "commitmsg": "commitlint -e $GIT_EDITOR"
+    "commitmsg": "commitlint -e $GIT_EDITOR",
+    "pre-commit": "lint-staged"
   },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"
@@ -56,7 +57,14 @@
   },
   "husky": {
     "hooks": {
+      "pre-commit": "npm run pre-commit",
       "commit-msg": "npm run commitmsg"
     }
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx,json}": [
+      "eslint --fix",
+      "prettier --write"
+    ]
   }
 }
