@@ -208,7 +208,7 @@ const ServiceItem = ({ service, barbershop }: ServiceItemProps) => {
                   Reservar
                 </Button>
 
-                <SheetContent className="px-0">
+                <SheetContent className="px-0 overflow-y-auto">
                   <SheetHeader>
                     <SheetTitle>Fazer Reserva</SheetTitle>
                   </SheetHeader>
@@ -307,7 +307,7 @@ const ServiceItem = ({ service, barbershop }: ServiceItemProps) => {
                     </div>
                   )}
 
-                  <SheetFooter className="mt-5 px-5">
+                  <SheetFooter className="mt-2 px-5">
                     <Button
                       className="font-bold"
                       onClick={handleCreateBooking}
