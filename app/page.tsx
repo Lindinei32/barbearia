@@ -94,7 +94,7 @@ const Home = async () => {
           </span>
         </p>
 
-        <div className="relative mt-6 h-[200px] w-full overflow-hidden rounded-lg shadow-lg">
+        <div className="relative mt-6 h-[150px] w-full rounded-xl">
           <Image
             src="/banner-01.png"
             fill
